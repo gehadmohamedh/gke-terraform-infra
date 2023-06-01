@@ -1,0 +1,6 @@
+data_source.tf
+.terraform/
+.terraform.lock.hcl
+google-cloud-sdk/
+smooth-verve-387310-a5ee3274abb5.json
+terraform.tfstate.backup

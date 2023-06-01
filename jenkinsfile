@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Prep') {
+            steps {
+                // Get some code from a GitHub repository
+                git branch: 'main', url: "https://github.com/gehadmohamedh/flask-app.git"
+            }
+        }
+        stage('CI') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerHUB', passwordVariable: 'MYPASS', usernameVariable: 'UNAME')]) {
+                  sh """
+                     docker login -u ${UNAME} -p ${MYPASS}
+                     docker build . -t gehadmohmaed1/flaskjenk
+                     docker push gehadmohmaed1/flaskjenk
+                  """
+                }
+            }
+        }
+
+        stage('CD') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerHUB', passwordVariable: 'MYPASS', usernameVariable: 'UNAME')]) {
+                  sh """
+                     docker login -u ${UNAME} -p ${MYPASS}
+                     cd /
+                      kubectl apply -f deploy.yaml -n app
+                     kubectl expose deployment flask-app --port=5000 --target-port=5000 --type=LoadBalancer -n app
+                  """
+                }
+            }
+        }
+    }
+}
